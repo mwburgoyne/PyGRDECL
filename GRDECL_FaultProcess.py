@@ -158,102 +158,175 @@ class FaultProcess:
         
         self.plotSplittedDomain()
 
+    #def extendFaultLines(self):
+    #    """Extend Fault lines
+    #        When extend fault lines to the boundary:
+    #            1. More intersection points added
+    #            2. boundary line split by these additional intersection point
+    #            3. More fault lines added if extended fault line intersectes
+    #    Arguments
+    #    ---------
+    #    FaultLines   -- [dict] Unique fault line data [Verts][LocID] 
+    #    IntersectPts -- intersection points (end points) for fault lines
+    #
+    #    Author:Bin Wang(binwang.0213@gmail.com)
+    #    Date: Sep. 2018
+    #    """
+    #    debug=0
+    #    OldLines=MultiLineString(self.BoundaryLines+self.FaultLines)
+    #    FaultLine_Extend=self.FaultLines[:]
+    #    BoundaryLine_Splitted=self.BoundaryLines[:]
+    #
+    #    #Step 1. Extend Faults Lines
+    #    ExtendLineIDs=[]
+    #    ExtendLines=[]
+    #    NewIntersectPts=[]
+    #    for i,Line in enumerate(self.FaultLines):
+    #        #if(i>25):
+    #        #    continue
+    #        flag=0
+    #        StartPoint,EndPoint=Line[0],Line[-1]
+    #        countSP=self.IntersectPts.count(StartPoint)
+    #        countEP=self.IntersectPts.count(EndPoint)
+    #        
+    #        NewLine=Line[:]
+    #        NewEndPoint=[]
+    #        if(debug): print('Before',NewLine,countSP,countEP)
+    #        if(countSP==1 and isBoundaryVert(self.GRDECL_Data,StartPoint)==False):
+    #            #if(debug):print('SV ',StartPoint,'is a hanging vert')
+    #            NewEndPoint=extend_FaultLines(self.GRDECL_Data,Line, FaultLine_Extend,'StartPoint')
+    #            NewLine=NewEndPoint + NewLine #+NewLine[1:] 
+    #            NewIntersectPts.append(NewEndPoint[0])
+    #            flag=1
+    #        if(countEP==1 and isBoundaryVert(self.GRDECL_Data,EndPoint)==False):
+    #            #if(debug): print('EV ',EndPoint,'is a hanging vert')
+    #            NewEndPoint=extend_FaultLines(self.GRDECL_Data,Line, FaultLine_Extend,'EndPoint')
+    #            NewLine=NewLine + NewEndPoint#NewLine[:-1]+NewEndPoint#
+    #            NewIntersectPts.append(NewEndPoint[0])
+    #            flag=1
+    #        if(flag==1):
+    #            if(debug): print('After',NewLine)
+    #            ExtendLines.append(NewLine)
+    #            ExtendLineIDs.append(i)
+    #            FaultLine_Extend[i]=NewLine
+    #
+    #    
+    #    if(debug): 
+    #        print('Added EndPoint',sorted(NewIntersectPts))
+    #        print('Extended Lines',ExtendLineIDs)
+    #
+    #    if(len(ExtendLines)>0): #We have extenable lines    
+    #        #Step 2. Find the intersection points between newly extended lines
+    #        NewLines=MultiLineString(ExtendLines)
+    #        PossibileIntersectPts=[]
+    #        for i,line_i in enumerate(NewLines):
+    #            for j,line_j in enumerate(NewLines):
+    #                if(j>i): 
+    #                    result=line_i.intersection(line_j)
+    #                    if(result.geom_type in ['LineString','Point']):
+    #                        #print('--------',result.geom_type)
+    #                        result=list(result.coords)
+    #                    else:
+    #                        if(len(result)>0): 
+    #                            #print('--------',result.geom_type)
+    #                            if(result.geom_type=='MultiPoint'):
+    #                                result=Shapely2List_MultiPoint(result)
+    #                            else:
+    #                                print("!!!!!!!!!!!!!!May have problem...Check extendFaultLines!!")
+    #                    if(len(result)>0): 
+    #                        #print(result)
+    #                        #print(i,j,line_i,line_j)
+    #                        PossibileIntersectPts+=result
+    #        print('Added %d new intersection pts'%(len(PossibileIntersectPts)))
+    #        NewIntersectPts+=PossibileIntersectPts
+    #        
+    #        #Step 3. Split the old line in terms of new intersection point
+    #        if(len(NewIntersectPts)>0):
+    #            result=split(MultiLineString(FaultLine_Extend), MultiPoint(NewIntersectPts))
+    #            FaultLine_Extend=Shapely2List_MultiLineString(result)
+    #            result=split(MultiLineString(self.BoundaryLines), MultiPoint(NewIntersectPts))
+    #            BoundaryLine_Splitted=Shapely2List_MultiLineString(result)
+    #
+    #        #debug
+    #        #self.plotLines(BoundaryLine_Splitted,FaultLine_Extend)
+    #    
+    #
+    #    return BoundaryLine_Splitted,FaultLine_Extend,self.IntersectPts+NewIntersectPts
+
     def extendFaultLines(self):
-        """Extend Fault lines
-            When extend fault lines to the boundary:
-                1. More intersection points added
-                2. boundary line split by these additional intersection point
-                3. More fault lines added if extended fault line intersectes
-        Arguments
-        ---------
-        FaultLines   -- [dict] Unique fault line data [Verts][LocID] 
-        IntersectPts -- intersection points (end points) for fault lines
-
-        Author:Bin Wang(binwang.0213@gmail.com)
-        Date: Sep. 2018
         """
-        debug=0
-        OldLines=MultiLineString(self.BoundaryLines+self.FaultLines)
-        FaultLine_Extend=self.FaultLines[:]
-        BoundaryLine_Splitted=self.BoundaryLines[:]
-
-        #Step 1. Extend Faults Lines
-        ExtendLineIDs=[]
-        ExtendLines=[]
-        NewIntersectPts=[]
-        for i,Line in enumerate(self.FaultLines):
-            #if(i>25):
-            #    continue
-            flag=0
-            StartPoint,EndPoint=Line[0],Line[-1]
-            countSP=self.IntersectPts.count(StartPoint)
-            countEP=self.IntersectPts.count(EndPoint)
-            
-            NewLine=Line[:]
-            NewEndPoint=[]
-            if(debug): print('Before',NewLine,countSP,countEP)
-            if(countSP==1 and isBoundaryVert(self.GRDECL_Data,StartPoint)==False):
-                #if(debug):print('SV ',StartPoint,'is a hanging vert')
-                NewEndPoint=extend_FaultLines(self.GRDECL_Data,Line, FaultLine_Extend,'StartPoint')
-                NewLine=NewEndPoint + NewLine #+NewLine[1:] 
+        Extend Fault lines to the boundary and handle new intersection points.
+        """
+        debug = 0
+        OldLines = MultiLineString(self.BoundaryLines + self.FaultLines)
+        FaultLine_Extend = self.FaultLines[:]
+        BoundaryLine_Splitted = self.BoundaryLines[:]
+    
+        # Step 1: Extend Fault Lines
+        ExtendLineIDs = []
+        ExtendLines = []
+        NewIntersectPts = []
+        for i, Line in enumerate(self.FaultLines):
+            flag = 0
+            StartPoint, EndPoint = Line[0], Line[-1]
+            countSP = self.IntersectPts.count(StartPoint)
+            countEP = self.IntersectPts.count(EndPoint)
+    
+            NewLine = Line[:]
+            NewEndPoint = []
+            if debug: print('Before', NewLine, countSP, countEP)
+    
+            if countSP == 1 and not isBoundaryVert(self.GRDECL_Data, StartPoint):
+                NewEndPoint = extend_FaultLines(self.GRDECL_Data, Line, FaultLine_Extend, 'StartPoint')
+                NewLine = NewEndPoint + NewLine
                 NewIntersectPts.append(NewEndPoint[0])
-                flag=1
-            if(countEP==1 and isBoundaryVert(self.GRDECL_Data,EndPoint)==False):
-                #if(debug): print('EV ',EndPoint,'is a hanging vert')
-                NewEndPoint=extend_FaultLines(self.GRDECL_Data,Line, FaultLine_Extend,'EndPoint')
-                NewLine=NewLine + NewEndPoint#NewLine[:-1]+NewEndPoint#
+                flag = 1
+            if countEP == 1 and not isBoundaryVert(self.GRDECL_Data, EndPoint):
+                NewEndPoint = extend_FaultLines(self.GRDECL_Data, Line, FaultLine_Extend, 'EndPoint')
+                NewLine = NewLine + NewEndPoint
                 NewIntersectPts.append(NewEndPoint[0])
-                flag=1
-            if(flag==1):
-                if(debug): print('After',NewLine)
+                flag = 1
+            if flag == 1:
+                if debug: print('After', NewLine)
                 ExtendLines.append(NewLine)
                 ExtendLineIDs.append(i)
-                FaultLine_Extend[i]=NewLine
-
-        
-        if(debug): 
-            print('Added EndPoint',sorted(NewIntersectPts))
-            print('Extended Lines',ExtendLineIDs)
-
-        if(len(ExtendLines)>0): #We have extenable lines    
-            #Step 2. Find the intersection points between newly extended lines
-            NewLines=MultiLineString(ExtendLines)
-            PossibileIntersectPts=[]
-            for i,line_i in enumerate(NewLines):
-                for j,line_j in enumerate(NewLines):
-                    if(j>i): 
-                        result=line_i.intersection(line_j)
-                        if(result.geom_type in ['LineString','Point']):
-                            #print('--------',result.geom_type)
-                            result=list(result.coords)
+                FaultLine_Extend[i] = NewLine
+    
+        if debug:
+            print('Added EndPoint', sorted(NewIntersectPts))
+            print('Extended Lines', ExtendLineIDs)
+    
+        if len(ExtendLines) > 0:  # We have extendable lines
+            # Step 2: Find the intersection points between newly extended lines
+            NewLines = MultiLineString(ExtendLines)
+            PossibleIntersectPts = []
+    
+            for i, line_i in enumerate(NewLines.geoms if hasattr(NewLines, "geoms") else []):
+                for j, line_j in enumerate(NewLines.geoms if hasattr(NewLines, "geoms") else []):
+                    if j > i:
+                        result = line_i.intersection(line_j)
+                        if result.geom_type in ['LineString', 'Point']:
+                            result = list(result.coords)
+                        elif result.geom_type == 'MultiPoint':
+                            result = Shapely2List_MultiPoint(result)
                         else:
-                            if(len(result)>0): 
-                                #print('--------',result.geom_type)
-                                if(result.geom_type=='MultiPoint'):
-                                    result=Shapely2List_MultiPoint(result)
-                                else:
-                                    print("!!!!!!!!!!!!!!May have problem...Check extendFaultLines!!")
-                        if(len(result)>0): 
-                            #print(result)
-                            #print(i,j,line_i,line_j)
-                            PossibileIntersectPts+=result
-            print('Added %d new intersection pts'%(len(PossibileIntersectPts)))
-            NewIntersectPts+=PossibileIntersectPts
-            
-            #Step 3. Split the old line in terms of new intersection point
-            if(len(NewIntersectPts)>0):
-                result=split(MultiLineString(FaultLine_Extend), MultiPoint(NewIntersectPts))
-                FaultLine_Extend=Shapely2List_MultiLineString(result)
-                result=split(MultiLineString(self.BoundaryLines), MultiPoint(NewIntersectPts))
-                BoundaryLine_Splitted=Shapely2List_MultiLineString(result)
-
-            #debug
-            #self.plotLines(BoundaryLine_Splitted,FaultLine_Extend)
-        
-
-        return BoundaryLine_Splitted,FaultLine_Extend,self.IntersectPts+NewIntersectPts
-
-
+                            print("Unhandled geometry type in extendFaultLines:", result.geom_type)
+    
+                        if len(result) > 0:
+                            PossibleIntersectPts += result
+    
+            print('Added %d new intersection pts' % (len(PossibleIntersectPts)))
+            NewIntersectPts += PossibleIntersectPts
+    
+            # Step 3: Split old lines in terms of new intersection points
+            if len(NewIntersectPts) > 0:
+                result = split(MultiLineString(FaultLine_Extend), MultiPoint(NewIntersectPts))
+                FaultLine_Extend = Shapely2List_MultiLineString(result)
+    
+                result = split(MultiLineString(self.BoundaryLines), MultiPoint(NewIntersectPts))
+                BoundaryLine_Splitted = Shapely2List_MultiLineString(result)
+    
+        return BoundaryLine_Splitted, FaultLine_Extend, self.IntersectPts + NewIntersectPts
 
     def plotLines(self,bdlines=[],faultlines=[],endpoints=[]):
         
@@ -671,11 +744,20 @@ def isFaultOnBoundaryEdge(GRDECL_Data,fault):
 
 
 ##------------------Geometry--------------------
+#def Shapely2List_MultiLineString(lines):
+#    LinesList=[]
+#    for line in lines:
+#        temp=list(line.coords)
+#        LinesList.append(tuple(temp))
+#    return LinesList
+    
 def Shapely2List_MultiLineString(lines):
-    LinesList=[]
-    for line in lines:
-        temp=list(line.coords)
-        LinesList.append(tuple(temp))
+    LinesList = []
+    # Access the 'geoms' attribute if 'lines' is a GeometryCollection
+    for line in lines.geoms if hasattr(lines, "geoms") else [lines]:
+        if isinstance(line, LineString):  # Ensure the geometry is a LineString
+            temp = list(line.coords)
+            LinesList.append(tuple(temp))
     return LinesList
 
 def Shapely2List_MultiPoint(points):
@@ -750,8 +832,20 @@ def DrawPolygons(polygons):
     fig,ax = plt.subplots(figsize=(6, 6), dpi=80, facecolor='w', edgecolor='k')
 
     patches=[]
+    #for p in polygons:
+    #    patches.append(Patches.Polygon(np.array(p),True))
+        
     for p in polygons:
-        patches.append(Patches.Polygon(np.array(p),True))
+        # Ensure p is a list of coordinate pairs (Nx2 shape)
+        polygon_array = np.array(p)
+        
+        # Check if the array is 2D with shape (N, 2)
+        if polygon_array.ndim != 2 or polygon_array.shape[1] != 2:
+            print(polygon_array)
+            raise ValueError(f"Invalid polygon data: {polygon_array}. Expected Nx2 array.")
+        
+        # Create the Polygon patch
+        patches.append(Patches.Polygon(polygon_array, closed=True))
 
     p = PatchCollection(patches,cmap=matplotlib.cm.rainbow, alpha=0.8)
     p.set_edgecolor('k')
