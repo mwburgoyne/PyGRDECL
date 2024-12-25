@@ -1,4 +1,8 @@
-PyGRDECL: A Python-based GRDECL Visualization Library
+Fork of PyGRDECL: A Python-based GRDECL Visualization Library
+Fork purpose: 
+  (1) Add tolerance for Eclipse comments  
+  (2) Fix for MultiLineString objects from Shapely that are not directly iterable
+  (3) Fix for Patches.Polygon constructor being called with an unexpected number of arguments
 ==============================================================================================
 Bin Wang (binwang.0213@gmail.com), Craft and Hawkins Department of Petroleum Engineering, Louisiana State University, Baton Rouge, US
 
